@@ -9,10 +9,15 @@
 #import <Foundation/Foundation.h>
 #import "SHCToDoItem.h"
 
+@class SHCTableViewCell;
+
 @protocol SHCTableViewCellDelegate <NSObject>
+
+- (void)cellDidBeginEditing:(SHCTableViewCell *)cell;
+
+- (void)cellDidEndEditing:(SHCTableViewCell *)cell;
 
 - (void)toDoItemDeleted:(SHCToDoItem *)todoItem;
 
-- (void)toDoItemComplete:(SHCToDoItem *)todoItem;
 
 @end

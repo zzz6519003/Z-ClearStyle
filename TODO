@@ -1,0 +1,9 @@
+That’s pretty groovy, right?
+Unfortunately, there is one little problem. You might have noticed in the code above that when the animation for the very last cell completes, it calls reloadData on the UITableView. Why is this?
+As mentioned previously, UITableView manages the cell lifecycle and position where cells are rendered onscreen. Moving the location of the cells, as you have done here with the delete animation, is something that the UITableView was not designed to accommodate.
+If you remove the call to reloadData, delete an item, then scroll the list, you will find that the UI becomes quite unstable, with cells appearing and disappearing unexpectedly.
+By sending the reloadData message to the UITableView, this issue is resolved. reloadData forces the UITableView to “dispose” of all of the cells and re-query the datasource. As a result, the cells are all located where the UITableView expects them to be.
+Unfortunately, it’s not that simple. The issue is almost resolved, but not completely. If you mark a few items as complete, then delete an item above the complete ones, you will probably notice an odd flickering effect as the green highlight rapidly shifts between cells.
+Where is this strange effect coming from? It is hard to say exactly, but my thought is that the cells that are recycled are being briefly rendered before their state is updated to reflect their new status, as dictated by the cellForRowAtIndex method that you implemented in Part 1 of this tutorial.
+I have tried various other hacks, and even hacks upon hacks, but unfortunately there doesn’t seem to be any way to remove this UI glitch. The bottom line is that the UITableView doesn’t like you messing with the location of its cells.
+So, what next? Give up? No way!

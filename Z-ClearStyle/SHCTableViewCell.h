@@ -10,7 +10,7 @@
 #import "SHCToDoItem.h"
 #import "SHCTableViewCellDelegate.h"
 
-@interface SHCTableViewCell : UITableViewCell
+@interface SHCTableViewCell : UITableViewCell <UITextFieldDelegate>
 
 @property (nonatomic) SHCToDoItem *todoItem;
 

@@ -42,6 +42,8 @@ const float UI_CUES_WIDTH = 50.0f;
         [self addSubview:_crossLabel];
         
         _label = [[SHCStrikethroughLabel alloc] initWithFrame:CGRectNull];
+        _label.delegate = self;
+        _label.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
         _label.textColor = [UIColor whiteColor];
         _label.font = [UIFont boldSystemFontOfSize:16];
         _label.backgroundColor = [UIColor clearColor];
@@ -144,10 +146,29 @@ const float LABEL_LEFT_MARGIN = 15.0f;
         }
         if (_completeOnDragRelease) {
             NSLog(@"it happens");
-            [self.delegate toDoItemComplete:self.todoItem];
+            self.todoItem.completed = YES;
             _itemCompleteLayer.hidden = NO;
             _label.strikethrough = YES;
         }
     }
 }
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+    [textField resignFirstResponder];
+    return NO;
+}
+
+- (BOOL)textFieldShouldBeginEditing:(UITextField *)textField {
+    return !self.todoItem.completed;
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+    [self.delegate cellDidEndEditing:self];
+    self.todoItem.text = textField.text;
+}
+
+- (void)textFieldDidBeginEditing:(UITextField *)textField {
+    [self.delegate cellDidBeginEditing:self];
+}
+
 @end

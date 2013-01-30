@@ -9,25 +9,53 @@
 #import "SHCViewController.h"
 #import "SHCToDoItem.h"
 #import "SHCTableViewCell.h"
+#import "SHCTableView.h"
 
 @interface SHCViewController ()
 
 @end
-
 @implementation SHCViewController {
     NSMutableArray *_toDoItems;
+    float _editingOffset;
+}
+
+- (void)cellDidBeginEditing:(SHCTableViewCell *)editingCell {
+    _editingOffset = _tableView.scrollView.contentOffset.y - editingCell.frame.origin.y;
+    for (SHCTableViewCell *cell in [_tableView visibleCells]) {
+        [UIView animateWithDuration:0.3 animations:^{
+            cell.frame = CGRectOffset(cell.frame, 0, _editingOffset);
+            if (cell != editingCell) {
+                cell.alpha = 0.3;
+            }
+        }];
+    }
+}
+
+- (void)cellDidEndEditing:(SHCTableViewCell *)editingCell {
+    for (SHCTableViewCell *cell in [_tableView visibleCells]) {
+        [UIView animateWithDuration:0.3 animations:^{
+            cell.frame = CGRectOffset(cell.frame, 0, -_editingOffset);
+            if (cell != editingCell) {
+                cell.alpha = 1.0;
+            }
+        }];
+    }
 }
 
 - (void)viewDidLoad
 {
+//    [super viewDidLoad];
+//	// Do any additional setup after loading the view, typically from a nib.
+//    self.tableView.dataSource = self;
+//    self.tableView.delegate = self;
+////    [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"cell"];
+//    [self.tableView registerClass:[SHCTableViewCell class] forCellReuseIdentifier:@"cell"];
+//    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+//    self.tableView.backgroundColor = [UIColor blackColor];
     [super viewDidLoad];
-	// Do any additional setup after loading the view, typically from a nib.
     self.tableView.dataSource = self;
-    self.tableView.delegate = self;
-//    [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"cell"];
-    [self.tableView registerClass:[SHCTableViewCell class] forCellReuseIdentifier:@"cell"];
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.backgroundColor = [UIColor blackColor];
+    [self.tableView registerClassForCells:[SHCTableViewCell class]];
 }
 
 - (void)didReceiveMemoryWarning
@@ -91,16 +119,53 @@
 }
 
 - (void)toDoItemDeleted:(SHCToDoItem *)todoItem {
-    NSUInteger index = [_toDoItems indexOfObject:todoItem];
-    [self.tableView beginUpdates];
+//    NSUInteger index = [_toDoItems indexOfObject:todoItem];
+//    [self.tableView beginUpdates];
+//    [_toDoItems removeObject:todoItem];
+//    [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:index inSection:0]] withRowAnimation:UITableViewRowAnimationRight];
+//    [self.tableView endUpdates];
+    float delay = 0.0;
     [_toDoItems removeObject:todoItem];
-    [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:index inSection:0]] withRowAnimation:UITableViewRowAnimationRight];
-    [self.tableView endUpdates];
+    NSArray *visibleCells = [self.tableView visibleCells];
+    
+    UIView *lastView = [visibleCells lastObject];
+    bool startAnimating = false;
+    
+    for (SHCTableViewCell *cell in visibleCells) {
+        if (startAnimating) {
+            [UIView animateWithDuration:0.3
+                                  delay:delay
+                                options:UIViewAnimationOptionCurveEaseInOut
+                             animations:^{
+                                 cell.frame = CGRectOffset(cell.frame, 0.0f, -cell.frame.size.height);
+                             } completion:^(BOOL finished) {
+                                 if (cell == lastView) {
+                                     [self.tableView reloadData];
+                                 }
+                             }];
+            delay += 0.03;
+        }
+        
+        if (cell.todoItem == todoItem) {
+            startAnimating = true;
+            cell.hidden = YES;
+        }
+    }
 }
 
-- (void)toDoItemComplete:(SHCToDoItem *)todoItem {
-    NSInteger index = [_toDoItems indexOfObject:todoItem];
-    [todoItem setCompleted:YES];
+#pragma mark - shctableview datasource
+- (NSInteger)numberOfRows {
+    return _toDoItems.count;
 }
 
+- (UIView *)cellForRow:(NSInteger)row {
+    NSString *ident = @"cell";
+//    SHCTableViewCell *cell = [[SHCTableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:ident];
+    SHCTableViewCell *cell = (SHCTableViewCell *)[self.tableView dequeueReuseableCell];
+    SHCToDoItem *item = _toDoItems[row];
+    cell.todoItem = item;
+    cell.delegate = self;
+    cell.backgroundColor = [self colorForIndex:row];
+    return cell;
+}
 @end
