@@ -1,3 +1,6 @@
+this project was ruined cuz i don't get git reset clear...
+
+
 That’s pretty groovy, right?
 Unfortunately, there is one little problem. You might have noticed in the code above that when the animation for the very last cell completes, it calls reloadData on the UITableView. Why is this?
 As mentioned previously, UITableView manages the cell lifecycle and position where cells are rendered onscreen. Moving the location of the cells, as you have done here with the delete animation, is something that the UITableView was not designed to accommodate.
